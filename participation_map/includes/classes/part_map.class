@@ -1,0 +1,175 @@
+<?php
+	
+	/*
+	PARTICIPATION MAP
+	Copyright (C) 2011-2012 Brant Knutzen, Thomas Lextrait,
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	*/
+	
+	class PartMap{
+		
+		/* ============================================================================ */
+		/* Get objects																	*/
+		/* ============================================================================ */
+		/**
+		* Returns the hashtable for a course
+		* @param id of the course
+		* @return associative array
+		*/
+		public static function getCourse($id){
+			global $CFG;
+			if(is_numeric($id)){
+				$table = $CFG->prefix."course";
+				$id = mysql_real_escape_string($id);
+				$result = mysql_query("SELECT * FROM $table WHERE id=$id");
+				return $result ? mysql_fetch_array($result) : false;
+			}else{return false;}
+		}
+		
+		/**
+		* Returns the forum objects in given course
+		* @param id of the course
+		* @return array of associative arrays
+		*/
+		public static function getForumsInCourse($id){
+			global $CFG;
+			if(is_numeric($id)){
+				// We want both forums and partforums
+				$table = $CFG->prefix."forum";
+				$forums = mysql_query("SELECT * FROM $table WHERE course=$id");
+				$table2 = $CFG->prefix."partforum";
+				$forums2 = mysql_query("SELECT * FROM $table2 WHERE course=$id");
+				$array = array();
+				if($forums){
+					while($f = mysql_fetch_array($forums)){
+						$f["partforum"]=false;	// this is a regular forum
+						array_push($array, $f);
+					}
+				}
+				if($forums2){
+					while($f = mysql_fetch_array($forums2)){
+						$f["partforum"]=true;	// this is a partforum
+						array_push($array, $f);
+					}
+				}
+				return $array;
+			}else{return false;}
+		}
+		
+		public static function getDiscussionsInForum($id){
+			global $CFG;
+			if(is_numeric($id)){
+				$table = $CFG->prefix."forum_discussions";
+				$result = mysql_query("SELECT * FROM $table WHERE forum=$id");
+				if($result){
+					$array = array();
+					while($d = mysql_fetch_array($result)){
+						array_push($array, $d);
+					}
+					return $array;
+				}else{return false;}
+			}
+		}
+		
+		public static function getDiscussionsInPartForum($id){
+			global $CFG;
+			if(is_numeric($id)){
+				$table = $CFG->prefix."partforum_discussions";
+				$result = mysql_query("SELECT * FROM $table WHERE forum=$id");
+				if($result){
+					$array = array();
+					while($d = mysql_fetch_array($result)){
+						array_push($array, $d);
+					}
+					return $array;
+				}else{return false;}
+			}
+		}
+		
+		/* ============================================================================ */
+		/* Get counts of things															*/
+		/* ============================================================================ */
+		/**
+		* Returns the number of users in the given course
+		* @param id of the course
+		* @return number or false if error
+		*/
+		public static function countUsersInCourse($id){
+			global $CFG;
+			if(is_numeric($id)){
+				$table = $CFG->prefix."course_display";
+				$result = mysql_query("SELECT id FROM $table WHERE course=$id");
+				return $result ? mysql_num_rows($result) : false;
+			}else{return false;}
+		}
+		
+		/**
+		* Returns the number of forums in the given course
+		* @param id of the course
+		* @return number or false if error
+		*/
+		public static function countForumsInCourse($id){
+			global $CFG;
+			if(is_numeric($id)){
+				// We count both forums and partforums
+				$table = $CFG->prefix."forum";
+				$result = mysql_query("SELECT id FROM $table WHERE course=$id");
+				$table2 = $CFG->prefix."partforum";
+				$result2 = mysql_query("SELECT id FROM $table2 WHERE course=$id");
+				
+				$total = 0;
+				if($result){$total+=mysql_num_rows($result);}
+				if($result2){$total+=mysql_num_rows($result2);}
+				return $result || $result2 ? $total : false;
+			}else{return false;}
+		}
+		
+		public static function countDiscussionsInForum($id){
+			global $CFG;
+			if(is_numeric($id)){
+				$table = $CFG->prefix."forum_discussions";
+				$result = mysql_query("SELECT * FROM $table WHERE forum=$id");
+				return $result ? mysql_num_rows($result) : false;
+			}else{return false;}
+		}
+		
+		public static function countDiscussionsInPartForum($id){
+			global $CFG;
+			if(is_numeric($id)){
+				$table = $CFG->prefix."partforum_discussions";
+				$result = mysql_query("SELECT * FROM $table WHERE forum=$id");
+				return $result ? mysql_num_rows($result) : false;
+			}else{return false;}
+		}
+		
+		public static function countPostsInDiscussion($id, $countGroupPosts=false, $partforum=false){
+			global $CFG;
+			if(is_numeric($id)){
+				if($partforum){
+					$table = $CFG->prefix."partforum_posts";
+				}else{
+					$table = $CFG->prefix."forum_posts";
+				}
+				if($countGroupPosts){
+					$result = mysql_query("SELECT id FROM $table WHERE discussion=$id");
+				}else{
+					$result = mysql_query("SELECT id FROM $table WHERE discussion=$id AND parent>0");
+				}
+				return $result ? mysql_num_rows($result) : false;
+			}else{return false;}
+		}
+		
+	}
+	

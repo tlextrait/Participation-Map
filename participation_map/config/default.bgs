@@ -1,0 +1,94 @@
+	
+	$demo = false;
+	$resolution = 3;			// Resolution multiplier (For settings panel)
+	$rounding = 1;				// Rounding for stats
+
+	$background = 255,255,255;				// Color of the background
+	$colorX = 0,0,0;						// Color of the X axis
+	$colorY = 0,0,0;						// Color of the Y axis
+	$colorDiscussionLine = 80,80,80;		// Color of the vertical discussion separating line
+	$colorArrow = 0,0,0;					// Color of arrows/lines
+	
+	// White space between the graph and the side of the picture (in pixels)
+	$marginTop = 75;
+	$marginBottom = 75;
+	$marginLeft = 75;
+	$marginRight = 75;
+	
+	$axisX = 0;				// Positions of the X axis in pixels
+	$axisY = 0;				// Positions of the Y axis in pixels
+	$axisXthick = 3;			// Thickness of X axis in pixels
+	$axisYthick = 3;			// Thickness of Y axis in pixels
+	$discussionLineThick = 3;	// Thickness of the discussion separating line
+	$displayDiscussionName = true; // Display discussion name labels
+	$displayDiscussionReplies = true; // Display number of replies label
+	$discussionNameFontSize = 30;
+	$discussionNameFont = "Arial Bold";
+	$discussionRepliesFontSize = 30;
+	$discussionRepliesFont = "Arial Italic";
+	$groupPost = true;		// First post of discussion is Group Post?
+	$groupInfo = true;		// Display group stats?
+
+	$arrows = true;				// Use arrows instead of simple lines?
+	$arrowThick = 3;			// Thickness of arrows in pixels
+	$arrowColors = true;		// Use colors for arrows?
+	$bezier = true;				// Use bezier curves?
+	
+	$firstDay = 1;			// Number of the first Day
+	$showDays = true;		// Display Day numbers?
+	$dayFont = "Arial";		// Font to use for numbering
+	$dayFontSize = 36;
+	$dayHeight = 300;		// Day spacing in pixels
+	$dayLineThick = 3;		// Day separating line thickness in pixels
+	$showDayLine = true;	// Show a horizontal line to separate Days?
+	
+	$colorDayNum = 0,0,0;				// Color of the Day numbers
+	$colorDayLine = 200,200,200;		// Color of the horizontal line separating Days
+	$colorDeadLine = 200,0,0;			// Color of the horizontal line for the Dead Line
+	$colorStartLine = 200,0,0;			// Color of the horizontal line for the Start Line
+	
+	$studentNameDisplay = "firstname";	// Can be: firstname, lastname, both, username
+	$studentNameUpperCase = false;
+	$studentNameMaxChar = 12;
+	$studentBorder = true;				// Use a border around the student blocks?
+	$studentBorderThickness = 3;		// Thickness of the border around student blocks (in pixels)
+	$studentSmartBorderColor = true;	// If true, will use Black or White borders depending on student assigned color
+	$studentRounded = true;				// Use rounded corners?
+	$studentRoundedRadius = 15;			// Rounded corner radius in pixels
+	$studentMarginVertical = 15;			// Margins between text and top/bottom borders
+	$studentMarginHorizontal = 15;		// Margins between text and left/right borders
+	$studentFont = "Arial";				// Font to write Student's name
+	$studentFontSize = 30;				// Font size
+	$studentSeparation = 300;			// Space between students, in pixels
+	$displayProfilePics = true;			// Display profile pictures under the X axis
+	
+	$colorStudentBorder = 0,0,0;		// Color of the student block border
+	
+	$headerFont = "Arial";
+	
+	$headerTitleSize = 72;
+	$headerSubTitleSize = 42;
+	$headerSubSubTitleSize = 42;
+	$headerTextSize = 36;
+	
+	$colorTitle = 0,0,0;
+	$colorSubTitle = 0,0,0;
+	$colorSubSubTitle = 0,0,0;
+	$colorHeader = 0,0,0;
+	
+	$headerTitle = "Participation Map";
+	$headerDisplayTitle = true;
+	$headerSubTitle = "Research and design by Brant Knutzen";
+	$headerDisplaySubTitle = true;
+	$headerSubSubTitle = "Moodle plugin developed by Thomas Lextrait";
+	$headerDisplaySubSubTitle = true;
+	
+	$headerDisplayCourse = true;
+	$headerDisplayForum = true;
+	$headerDisplayRatingPeriod = true;
+	$headerDisplayCourseParticipants = true;
+	$headerDisplayFeedback = true;
+	$headerDisplayPostsPerStudent = true;
+	$headerDisplayPostsPerDiscussion = true;
+	$headerDisplayTransactivity = true;
+	

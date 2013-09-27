@@ -1,0 +1,591 @@
+<?php
+	
+	/*
+	PARTICIPATION MAP
+	Copyright (C) 2011-2012 Brant Knutzen, Thomas Lextrait,
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	*/
+	
+	class BushGraph { 
+		
+		private $height;
+		private $width;
+		private $img;
+		private $spectrum = array(0 => "");
+		private $spectrumStep = 50;
+		
+		private $White;
+		private $Black;
+		
+		/** 
+		 * Constructor
+		 * @param width, width of the picture
+		 * @param height, height of the picture
+		 */
+		function __construct($width, $height){
+			$this->height = $height;
+			$this->width = $width;
+			
+			// Create image
+			$this->img = imageCreateTrueColor($width, $height);
+			
+			// Antialias
+			imageAntiAlias($this->img, true);
+			
+			// Create color spectrum
+			$total = 255 - (255 % $this->spectrumStep);
+			$i = 0;
+			for($R=0; $R<=$total; $R+=$this->spectrumStep){
+				for($G=0; $G<=$total; $G+=$this->spectrumStep){
+					for($B=0; $B<=$total; $B+=$this->spectrumStep){
+						// Cancel out gray colors && pale colors && dark color
+						if(($R!=$G || $G!=$B || $R!=$B) && $R+$G+$B<500 && $R+$G+$B>50){
+							$this->spectrum[$i] = new Color($R, $G, $B);
+							$i++;
+						}
+					}
+				}
+			}
+			
+			// Create basic colors
+			$this->Black = $this->defineColor(0,0,0);
+			$this->White = $this->defineColor(255,255,255);
+		}
+		
+		/** Destroys the plot
+		*/
+		public function destroy(){
+			imageDestroy($this->img);
+		}
+		
+		/**
+		 * Sets the background color of the picture
+		 * @param color, color of the background
+		 */
+		public function setBackground($color){
+			$color = intval($color);
+			imageFillToBorder($this->img, 0, 0, $color, $color);
+		}
+		
+		/**
+		 * Defines a new color in the picture
+		 * @param R, red color /255
+		 * @param G, green color /255
+		 * @param B, blue color /255
+		 * @return pointer to color object
+		 */
+		public function defineColor($R, $G, $B){
+			return imageColorAllocate($this->img, $R, $G, $B);
+		}
+		
+		/**
+		 * Draws an arrow from point 1 to point 2
+		 * @param x1, X coordinate of the beginning of line
+		 * @param y1, Y coordinate of the beginning of line
+		 * @param x2, X coordinate of the ending of line
+		 * @param y2, Y coordinate of the ending of line
+		 * @param color, color of the arrow
+		 * @param thick, thickness of the line in pixels
+		 */
+		public function drawArrow($x1, $y1, $x2, $y2, $color, $thick=1){
+			
+			$color = intval($color);
+			
+			// Arrow settings
+			if($thick==1){
+				$alength = 8;
+				$awidth = 4;
+			}else{
+				$alength = 6 * $thick;
+				$awidth = 3 * $thick;
+			}
+			
+			$distance = sqrt(pow($x1 - $x2, 2) + pow($y1 - $y2, 2));
+			if($distance<=0){$distance = 1;}
+
+		    $dx = $x2 + ($x1 - $x2) * $alength / $distance;
+		    $dy = $y2 + ($y1 - $y2) * $alength / $distance;
+
+		    $k = $awidth / $alength;
+
+		    $x2o = $x2 - $dx;
+		    $y2o = $dy - $y2;
+
+		    $x3 = $y2o * $k + $dx;
+		    $y3 = $x2o * $k + $dy;
+
+		    $x4 = $dx - $y2o * $k;
+		    $y4 = $dy - $x2o * $k;
+
+		    $this->drawLine($x1, $y1, $dx, $dy, $color, $thick);
+		    imagefilledpolygon($this->img, array($x2, $y2, $x3, $y3, $x4, $y4), 3, $color);
+		}
+		
+		/**
+		 * Draws a line on the plot
+		 * @param x1, X coordinate of beginning of line
+		 * @param y1, Y coordinate of beginning of line
+		 * @param x2, X coordinate of ending of line
+		 * @param y2, Y coordinate of ending of line
+		 * @param color, color of line
+		 * @param thick, thickness of the line in pixels
+		 */
+		public function drawLine($x1, $y1, $x2, $y2, $color, $thick=1){
+			
+			$color = intval($color);
+		
+			if($thick<1){$thick=1;}
+
+		    if($thick == 1){
+		        return imageline($this->img, $x1, $y1, $x2, $y2, $color);
+		    }
+		    $t = $thick / 2 - 0.5;
+		    if($x1 == $x2 || $y1 == $y2){
+		        return imagefilledrectangle($this->img, round(min($x1, $x2) - $t), round(min($y1, $y2) - $t), round(max($x1, $x2) + $t), round(max($y1, $y2) + $t), $color);
+		    }
+		    $k = ($y2 - $y1) / ($x2 - $x1); //y = kx + q
+		    $a = $t / sqrt(1 + pow($k, 2));
+		    $points = array(
+		        round($x1 - (1+$k)*$a), round($y1 + (1-$k)*$a),
+		        round($x1 - (1-$k)*$a), round($y1 - (1+$k)*$a),
+		        round($x2 + (1+$k)*$a), round($y2 - (1-$k)*$a),
+		        round($x2 + (1-$k)*$a), round($y2 + (1+$k)*$a),
+		    );
+		    imagefilledpolygon($this->img, $points, 4, $color);
+		    imagepolygon($this->img, $points, 4, $color);
+		}
+		
+		/**
+		 * Draws a line on the plot
+		 * @param x0, X coordinate of beginning of line
+		 * @param y0, Y coordinate of beginning of line
+		 * @param x1, X coordinate of control point 1
+		 * @param y1, Y coordinate of control point 1
+		 * @param x3, X coordinate of ending of line
+		 * @param y3, Y coordinate of ending of line
+		 * @param x2, X coordinate of control point 2
+		 * @param y2, Y coordinate of control point 2
+		 * @param color, color of line
+		 * @param thick, thickness of the line in pixels
+		 */
+		public function drawBezier($x0, $y0, $x1, $y1, $x3, $y3, $x2, $y2, $color, $thick=3, $arrow=true){
+			
+			$color = intval($color);
+			$hasgrid = 0;
+			$t_start = 0;
+			$t_end = 1;
+			$render = 0;
+			$step = .001;
+			
+			$cx = 3*($x1-$x0);
+			$bx = 3*($x2-$x1)-$cx;
+			$ax = $x3-$x0-$cx-$bx;
+			
+			$cy = 3*($y1-$y0);
+			$by = 3*($y2-$y1)-$cy;
+			$ay = $y3-$y0-$cy-$by;
+			
+			$prev_x = 0;
+			$prev_y = 0;
+			$prev = false;
+			
+			for($t=$t_start; $t<$t_end; $t+=$step)
+			{
+				$x = ($ax)*$t*$t*$t+($bx)*$t*$t+($cx)*$t+$x0;
+				$y = ($ay)*$t*$t*$t+($by)*$t*$t+($cy)*$t+$y0;
+				
+				if(!$prev){
+					$prev_x = $x;
+					$prev_y = $y;
+					$prev = true;
+				}else{
+					if($t+$step >= $t_end){
+						// Last section of the curve
+						if($arrow){
+							$this->drawArrow($prev_x, $prev_y, $x, $y, $color, $thick);
+						}else{
+							$this->drawLine($prev_x, $prev_y, $x, $y, $color, $thick);
+						}
+					}else{
+						$this->drawLine($prev_x, $prev_y, $x, $y, $color, $thick);
+						$prev_x = $x;
+						$prev_y = $y;
+					}
+				}
+			}
+		}
+		
+		/**
+		 * Draws a rounded corner rectangle
+		 * @param x1, X coordinate of top left corner
+		 * @param y1, Y coordinate of top left corner
+		 * @param x2, X coordinate of bottom right corner
+		 * @param y2, Y coordinate of bottom right corner
+		 * @param radius, radius of rounding in pixels
+		 * @param color, color of rectangle
+		 */
+		public function drawRoundedRectangle($x, $y, $x2, $y2, $color, $radius=5){
+			$color = intval($color);
+			// Compute diameter
+		    $dia = $radius*2;
+		
+			// Draw the middle cross shape of the rectangle
+		    imagefilledrectangle($this->img, $x, $y+$radius, $x2, $y2-$radius, $color);
+		    imagefilledrectangle($this->img, $x+$radius, $y, $x2-$radius, $y2, $color);
+
+			// Fill in the rounded corners
+		    imagefilledellipse($this->img, $x+$radius, $y+$radius, $dia, $dia, $color);
+		    imagefilledellipse($this->img, $x+$radius, $y2-$radius, $dia, $dia, $color);
+		    imagefilledellipse($this->img, $x2-$radius, $y2-$radius, $dia, $dia, $color);
+		    imagefilledellipse($this->img, $x2-$radius, $y+$radius, $dia, $dia, $color);
+		}
+		
+		/**
+		 * Draws a rectangle
+		 * @param x1, X coordinate of top left corner
+		 * @param y1, Y coordinate of top left corner
+		 * @param x2, X coordinate of bottom right corner
+		 * @param y2, Y coordinate of bottom right corner
+		 * @param color, color of rectangle
+		 */
+		public function drawRectangle($x, $y, $x2, $y2, $color){
+			// Draw rectangle
+			$color = intval($color);
+		    imagefilledrectangle($this->img, $x, $y, $x2, $y2, $color);
+		}
+		
+		/**
+		 * Draws a student block
+		 * @param y, Y coordinate of the block
+		 * @param student, Student object
+		 */
+		public function drawStudent($y, $student){
+			
+			// Compute text dimensions
+			$textWidth = $this->getTextWidth($student->name, $student->fontSize, $student->font);
+			$textHeight = $this->getTextHeight($student->name, $student->fontSize, $student->font);
+			// Compute label coordinates
+			$labelX = $student->xLocation - $textWidth/2;
+			$labelY = $y + $textHeight/2;
+			
+			if($student->showBorder){
+				
+				// Compute rectangle dimensions
+				$height = $textHeight + $student->marginVertical * 2;
+				$width = $textWidth + $student->marginHorizontal * 2;
+				// Compute rectangle2 dimensions
+				$height2 = $textHeight + $student->marginVertical * 2 + $student->borderThick * 2;
+				$width2 = $textWidth + $student->marginHorizontal * 2 + $student->borderThick * 2;
+				// Compute rectangle coordinates
+				$rectX1 = $student->xLocation - $width/2;
+				$rectY1 = $y - $height/2;
+				$rectX2 = $student->xLocation + $width/2;
+				$rectY2 = $y + $height/2;
+				// Compute rectangle2 coordinates
+				$rect2X1 = $student->xLocation - $width2/2;
+				$rect2Y1 = $y - $height2/2;
+				$rect2X2 = $student->xLocation + $width2/2;
+				$rect2Y2 = $y + $height2/2;
+				// Smart border colors?
+				if($student->smartBorderColor){
+					// Use Black or White border?
+					if($this->isDarkColor($student->color)){$bcolor = $this->White;}else{$bcolor = $this->Black;}
+				}else{
+					$bcolor = $student->borderColor;
+				}
+				
+				if($student->rounded){
+					// Draw rounded rectangle
+					$this->drawRoundedRectangle($rect2X1, $rect2Y1, $rect2X2, $rect2Y2, $bcolor, $student->radius);
+					// Draw rounded rectangle
+					$this->drawRoundedRectangle($rectX1, $rectY1, $rectX2, $rectY2, $student->color, $student->radius);
+				}else{
+					// Draw rectangle
+					$this->drawRectangle($rect2X1, $rect2Y1, $rect2X2, $rect2Y2, $bcolor);
+					// Draw rectangle
+					$this->drawRectangle($rectX1, $rectY1, $rectX2, $rectY2, $student->color);
+				}
+			}else{
+				
+				// Compute rectangle dimensions
+				$height = $textHeight + $student->marginVertical * 2;
+				$width = $textWidth + $student->marginHorizontal * 2;
+				// Compute rectangle coordinates
+				$rectX1 = $student->xLocation - $width/2;
+				$rectY1 = $y - $height/2;
+				$rectX2 = $student->xLocation + $width/2;
+				$rectY2 = $y + $height/2;
+				
+				if($student->rounded){
+					// Draw rounded rectangle
+					$this->drawRoundedRectangle($rectX1, $rectY1, $rectX2, $rectY2, $student->color, $student->radius);
+				}else{
+					// Draw rectangle
+					$this->drawRectangle($rectX1, $rectY1, $rectX2, $rectY2, $student->color);
+				}
+			}
+			
+			// Use Black or White text?
+			if($this->isDarkColor($student->color)){$color = $this->White;}else{$color = $this->Black;}
+			
+			// Write text
+			$this->write($student->name, $student->fontSize, $student->font, $color, $labelX, $labelY);
+		}
+		
+		/**
+		 * Returns the height of a post block for given student
+		 * @param student object
+		 */
+		public function getPostHeight($student){
+			// Compute text dimensions
+			$textHeight = $this->getTextHeight($student->name, $student->fontSize, $student->font);
+			
+			if($student->showBorder){
+				// Compute rectangle2 dimensions
+				return $textHeight + $student->marginVertical * 2 + $student->borderThick * 2;
+			}else{
+				// Compute rectangle dimensions
+				return $textHeight + $student->marginVertical * 2;
+			}
+		}
+		
+		/**
+		 * Returns the width of a post block for given student
+		 * @param student object
+		 */
+		public function getPostWidth($student){
+			// Compute text dimensions
+			$textWidth = $this->getTextWidth($student->name, $student->fontSize, $student->font);
+			
+			if($student->showBorder){
+				// Compute rectangle2 dimensions
+				return $textWidth + $student->marginHorizontal * 2 + $student->borderThick * 2;
+			}else{
+				// Compute rectangle dimensions
+				return $textWidth + $student->marginHorizontal * 2;
+			}
+		}
+		
+		/**
+		 *
+		 */
+		public function getArrowCut($x1, $y1, $x2, $y2, $student){
+			
+			$y1 = round($y1);
+			$y2 = round($y2);
+			$cut = array();
+			
+			if($x1 == $x2){ // SAME X AXIS
+				if($y1 < $y2){
+					$cut["Y"] = $y2 - $this->getPostHeight($student)/2;
+					$cut["X"] = $x2; 
+				}else if($y1 == $y2){
+					$cut["Y"] = $y2;
+					$cut["X"] = $x2;
+				}else if($y1 > $y2){
+					$cut["Y"] = $y2 + $this->getPostHeight($student)/2;
+					$cut["X"] = $x2;
+				}
+			}else if($y1 == $y2){ // SAME Y AXIS
+				if($x1 < $x2){
+					$cut["Y"] = $y2;
+					$cut["X"] = $x2 - $this->getPostWidth($student)/2; 
+				}else if($x1 > $x2){
+					$cut["Y"] = $y2;
+					$cut["X"] = $x2 + $this->getPostWidth($student)/2;
+				}
+			}else if($x1 > $x2 && $y1 < $y2 && ($y2-$y1) > ($this->getPostHeight($student)/$this->getPostWidth($student))*($x1-$x2)){
+				/*
+					Post is located on top right of parent, above the 45 degree line
+				*/
+				$angle = acos(($y2-$y1)/sqrt(pow($x1-$x2,2)+pow($y2-$y1,2)));	// get angle
+				$hyp = ($this->getPostHeight($student)/2)*cos($angle);	// get hypotenuse
+				$cut["X"] = $x2 + sin($angle)*$hyp;
+				$cut["Y"] = $y2 - $this->getPostHeight($student)/2;
+			}else if($x1 > $x2 && $y1 < $y2 && ($y2-$y1) == ($this->getPostHeight($student)/$this->getPostWidth($student))*($x1-$x2)){
+				/*
+					Post is located on top right of parent, on the 45 degree line
+				*/
+				$cut["X"] = $x2 + $this->getPostWidth($student)/2;
+				$cut["Y"] = $y2 - $this->getPostHeight($student)/2;
+			}else if($x1 > $x2 && $y1 < $y2 && ($y2-$y1) < ($this->getPostHeight($student)/$this->getPostWidth($student))*($x1-$x2)){
+				/*
+					Post is located on top right of parent, below the 45 degree line
+				*/
+				$angle = acos(($x1-$x2)/sqrt(pow($x1-$x2,2)+pow($y2-$y1,2)));	// get angle
+				$hyp = ($this->getPostHeight($student)/2)*cos($angle);	// get hypotenuse
+				$cut["X"] = $x2 + $this->getPostWidth($student)/2;
+				$cut["Y"] = $y2 - sin($angle)*$hyp;
+			}else if($x1 < $x2 && $y1 < $y2 && ($y2-$y1) > ($this->getPostHeight($student)/$this->getPostWidth($student))*($x2-$x1)){
+				/*
+					Post is located on top left of parent, above the 45 degree line
+				*/
+				$angle = acos(($y2-$y1)/sqrt(pow($x1-$x2,2)+pow($y2-$y1,2)));	// get angle
+				$hyp = ($this->getPostHeight($student)/2)*cos($angle);	// get hypotenuse
+				$cut["X"] = $x2 - sin($angle)*$hyp;
+				$cut["Y"] = $y2 - $this->getPostHeight($student)/2;
+			}else if($x1 < $x2 && $y1 < $y2 && ($y2-$y1) == ($this->getPostHeight($student)/$this->getPostWidth($student))*($x2-$x1)){
+				/*
+					Post is located on top left of parent, on the 45 degree line
+				*/
+				$cut["X"] = $x2 - $this->getPostWidth($student)/2;
+				$cut["Y"] = $y2 - $this->getPostHeight($student)/2;
+			}else if($x1 < $x2 && $y1 < $y2 && ($y2-$y1) < ($this->getPostHeight($student)/$this->getPostWidth($student))*($x2-$x1)){
+				/*
+					Post is located on top left of parent, below the 45 degree line
+				*/
+				$angle = acos(($x1-$x2)/sqrt(pow($x1-$x2,2)+pow($y2-$y1,2)));	// get angle
+				$hyp = ($this->getPostHeight($student)/2)*cos($angle);	// get hypotenuse
+				$cut["X"] = $x2 - $this->getPostWidth($student)/2;
+				$cut["Y"] = $y2 - sin($angle)*$hyp;
+			}else{
+				$cut["X"] = $x2;
+				$cut["Y"] = $y2;
+			}
+			
+			return $cut;
+		}
+
+		
+		public function insert($image, $x, $y, $width, $height){
+			imageCopyResampled($this->img, $image, $x, $y, 0, 0, $width, $height, imagesx($image), imagesy($image));
+		}
+		
+		/**
+		 * Returns a random color
+		 * @return pointer to random color object
+		 */
+		public function randColor(){
+			return imageColorAllocate($this->img, rand(0,255), rand(0,255), rand(0,255));
+		}
+		
+		/**
+		 * Returns a color from the spectrum as a section
+		 * @param select, color selection
+		 * @param divide, spectrum divider
+		 * @return pointer to color object
+		 */
+		public function getColorFromSpectrum($select, $divide){
+			$colors = count($this->spectrum);
+			$colorPicked = round($colors / $divide) * $select;
+			if($colorPicked > $colors-1){$colorPicked = $colors-1;}
+			if($colorPicked < 0){$colorPicked = 0;}
+			$colorPicked = $this->spectrum[$colorPicked];
+			return $this->defineColor($colorPicked->R, $colorPicked->G, $colorPicked->B);
+		}
+		
+		/**
+		 * Returns a color from the spectrum as a section
+		 * @param $color
+		 * @return true if color is dark, else if its not
+		 */
+		public function isDarkColor($color){
+			$color = imagecolorsforindex($this->img, intval($color));
+			$total = $color["red"] + $color["green"] + $color["blue"];
+			// 382.5 is (255*3)/2 (threshold lowered to 300 intentionally)
+			if($total < 350){return true;}else{return false;}
+		}
+		
+		/**
+		 * Writes text on the picture
+		 * @param text, text to write
+		 * @param size, size of the font
+		 * @param font, font to be used
+		 * @param font, font to be used
+		 * @param color, color of text
+		 * @param x, X coordinate (left) in pixels
+		 * @param y, Y coordinate (bottom) in pixels
+		 */
+		public function write($text, $size, $font, $color, $x, $y){
+			$color = intval($color);
+			// Font file?
+			$fontfile = "fonts/$font.ttf";
+			// Write text
+			// rimagettftext ( resource $image , float $size , float $angle , int $x , int $y , int $color , string $fontfile , string $text )
+			imagettftext($this->img, $size , 0, $x, $y , $color , $fontfile, $text);
+		}
+		
+		/**
+		 * Returns the height a given text would take
+		 * @param text, text to write
+		 * @param size, size of the font
+		 * @param font, font to be used
+		 * @return height in pixels
+		 */
+		public static function getTextHeight($text, $size, $font){
+			
+			/* 
+				Replace special characters
+				Characters with a lower baseline will disrupt the computation
+			*/
+			$text = str_replace("q", "o", $text);
+			$text = str_replace("y", "o", $text);
+			$text = str_replace("p", "o", $text);
+			$text = str_replace("g", "o", $text);
+			$text = str_replace("j", "o", $text);
+			
+			$box = imagettfbbox($size, 0, "fonts/$font.ttf", $text);
+			return $box[3]-$box[7];
+		}
+		
+		/**
+		 * Returns the width a given text would take
+		 * @param text, text to write
+		 * @param size, size of the font
+		 * @param font, font to be used
+		 * @return width in pixels
+		 */
+		public static function getTextWidth($text, $size, $font){
+			$box = imagettfbbox($size, 0, "fonts/$font.ttf", $text);
+			return $box[2]-$box[6];
+		}
+		
+		/**
+		 * Saves the plot to a PNG file
+		 * @param file, saving location with .png extension
+		 */
+		public function outputPNG($file){
+			imagePNG($this->img, $file);
+		}
+		
+		/**
+		 * Saves the plot to a JPEG file
+		 * @param file, saving location with .jpeg extension
+		 */
+		public function outputJPEG($file){
+			imageJPEG($this->img, $file);
+		}
+		
+		/**
+		 * Saves the plot to a GIF file
+		 * @param file, saving location with .gif extension
+		 */
+		public function outputGIF($file){
+			imageGIF($this->img, $file);
+		}
+	}
+	
+	class Color{
+		public $R;
+		public $G;
+		public $B;
+		
+		function __construct($R, $G, $B){
+			$this->R = $R;
+			$this->G = $G;
+			$this->B = $B;
+		}
+	}
+	

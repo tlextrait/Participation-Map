@@ -1,0 +1,166 @@
+<?php
+
+	/*
+	PARTICIPATION MAP
+	Copyright (C) 2011-2012 Brant Knutzen, Thomas Lextrait,
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	*/
+
+	class BS_Discussion{
+		
+		public $id;
+		public $name;
+		public $firstPost;
+		public $userid;
+		
+		public $students = array();
+		public $studentIds = array();
+		public $studentCount = 0;
+		
+		public $posts = array();
+		public $postCount = 0;
+		public $totalFeedbacks = 0;
+		
+		public $totalPosts = 0;
+		
+		public $nameDisplayed = false;
+		
+		public function __construct($name){
+			$this->name = $name;
+		}
+		
+		public function addPostFeedback($post){
+			$this->totalFeedbacks++;
+		}
+		
+		// Add a student
+		public function addStudent($student){
+			$this->students[$this->studentCount] = $student;
+			$this->studentIds[$this->studentCount] = $student->id;
+			$this->studentCount++;
+		}
+		
+		// Has student?
+		public function hasStudent($student){
+			if(in_array($student, $this->students)){
+				return true;
+			}else{
+				return false;
+			}
+		}
+		
+		// Has student id?
+		public function hasStudentId($id){
+			if(in_array($id, $this->studentIds)){
+				return true;
+			}else{
+				return false;
+			}
+		}
+		
+		// Get student by ID
+		public function getStudentByID($id){
+			for($i=0; $i < $this->studentCount; $i++){
+				$s = $this->students[$i];
+				if($s->id == $id){
+					return $s;
+				}
+			}
+		}
+		
+		// Add a post
+		public function addPost($post){
+			$this->postCount++;
+			if($post->parent != 0){
+				$this->totalPosts++;
+			}
+			$cDate = $post->created;
+			// Perform insert-sort
+			if($this->postCount > 1){
+				$i = 0;
+				while($this->posts[$i]->created > $cDate && $i<count($this->posts)-1){$i++;}
+				$this->posts = $this->insertArray($i, $this->posts, $post);
+			}else{
+				$this->posts[0] = $post;
+			}
+		}
+		
+		// Get post by ID
+		public function getPostByID($id){
+			for($i=0; $i<$this->postCount; $i++){
+				$tPost = $this->posts[$i];
+				if($tPost->id==$id){return $tPost;}
+			}
+			return false;
+		}
+		
+		// Return the newest post
+		public function peakPost(){
+			return $this->posts[0];
+		}
+		
+		// Pop the newest post
+		public function popPost(){
+			if($this->postCount > 0){
+				$post = $this->posts[0];
+				$this->posts = $this->shiftUpArray(0, $this->posts);
+				$this->postCount--;
+				return $post;
+			}
+		}
+		
+		// Insert on given index
+		private function insertArray($index, $array, $value){
+			$array = $this->shiftDownArray($index, $array);
+			$array[$index] = $value;
+			return $array;
+		}
+		
+		// Shift array down to leave space on given index
+		private function shiftDownArray($index, $array){
+			$prev = $array[$index];
+			$array[$index] = "";
+			for($i=$index+1; $i<count($array); $i++){
+				$temp = $array[$i];
+				$array[$i] = $prev;
+				$prev = $temp;
+			}
+			$array[$i] = $prev;
+			return $array;
+		}
+		
+		// Shift array up and overwrite on given index
+		private function shiftUpArray($index, $array){
+			if(count($array) > 1){
+				$array[$index] = $array[$index+1];
+				for($i=$index+1; $i<count($array)-1; $i++){
+					$array[$i] = $array[$i+1];
+				}
+				unset($array[$i]);
+			}else{
+				$array = array();
+			}
+			return $array;
+		}
+		
+		// Swap 2 elements of an array
+		private function swapArray($i1, $i2, $array){
+			$temp = $array[$i1];
+			$array[$i1] = $array[$i2];
+			$array[$i2] = $temp;
+			return $array;
+		}
+		
+	}

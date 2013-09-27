@@ -1,0 +1,169 @@
+<?php
+
+	/*
+	PARTICIPATION MAP
+	Copyright (C) 2011-2012 Brant Knutzen, Thomas Lextrait,
+	
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	*/
+
+	class BS_Student{
+		
+		public $id;						// User id
+		public $name;					// Student's name
+		public $user;					// Student's username
+		public $xLocation;				// X coordinate
+		public $color;					// Student's color in the graph
+		public $profilePic;				// Student's profile picture
+		public $spectrumIndex;			// Index in the color spectrum
+		
+		public $rounded = false;		// Rounded corners?
+		public $radius = 5;				// Radius of corners
+		
+		public $showBorder = true;			// Show a border? (true/false)
+		public $borderThick = 1;			// Thickness of border in pixels
+		public $borderColor;				// Color of border
+		public $smartBorderColor = false; 	// If true, will use Black or White borders depending on student assigned color
+		
+		public $font = "Arial";			// Font to write student's name
+		public $fontSize = 10;			// Fontsize for student's name
+		public $marginVertical = 5;		// Margin between text and top/bottom borders
+		public $marginHorizontal = 5;	// Margin between text and left/right borders
+		
+		public $discussion;				// Disussion id
+		
+		public $picDrawn = false;		// true/false indicates if profile picture has been drawn
+		
+		/**
+		* Student object
+		*/
+		function __construct($name, $color="", $showBorder=false, $rounded=false, $borderThick=0, $borderColor="", $user=""){
+			$this->name = $name;
+			$this->color = $color;
+			$this->showBorder = $showBorder;
+			$this->rounded = $rounded;
+			$this->borderThick = $borderThick;
+			$this->borderColor = $borderColor;
+			$this->user = $user;
+		}
+		
+		/**
+		* Copies the student's profile picture to the BG data folder
+		* @param moodleURL base URL for this Moodle site
+		* @param CFG global variable for Moodle
+		*/
+		function copyProfilePic($moodleURL, $CFG){
+			if(is_numeric($this->id) && $this->id >= 0){
+			
+				$studentId = $this->id;
+				$copyToURL = $CFG->dataroot."/participation_map/temp/".$studentId.".jpg";
+			
+				// Fetch profile picture
+				try{
+				
+					if($CFG->forcelogin){
+					
+						$forceLoginFileURL = $moodleURL."/pluginfile.php?file=%2F1".$studentId."%2Fuser%2Ficon%2Ff1";
+						
+						/*
+						require_once('../config.php');
+						require_once('../lib/filelib.php');
+						
+						$fs = get_file_storage();
+						
+						if(file_exists($forceLoginFileURL)){
+							if (!$file = $fs->get_file($context->id, 'user', 'icon', 0, '/', $filename.'/.png')) {
+					            if (!$file = $fs->get_file($context->id, 'user', 'icon', 0, '/', $filename.'/.jpg')) {
+					                //redirect($OUTPUT->pix_url('u/f1'));
+					                return false;
+					            }
+					        }
+					        echo $file;
+				        }else{
+				        	echo "FILE NOT FOUND<br/>";
+							// Take default picture (gray silhouette or yellow sponge smiley)
+							copy($moodleURL."/user/pix.php?file=".$studentId."/f1.jpg", $copyToURL);
+						}
+				        */
+						
+						
+						// Force login required, use the file service
+						if(file_exists($forceLoginFileURL)){
+							if(!copy($forceLoginFileURL, $copyToURL)){
+								copy($moodleURL."/user/pix.php?file=".$studentId."/f1.jpg", $copyToURL);
+							}
+						}else{
+							// Take default picture (gray silhouette or yellow sponge smiley)
+							copy($moodleURL."/user/pix.php?file=".$studentId."/f1.jpg", $copyToURL);
+						}
+						
+					}else if($CFG->slasharguments){
+						// Moodle server allows slash arguments
+						if(!copy($moodleURL."/user/pix.php/".$studentId."/f1.jpg", $copyToURL)){
+							copy($moodleURL."/user/pix.php?file=".$studentId."/f1.jpg", $copyToURL);
+						}
+					}else{
+						// Moodle server forbids slash arguments
+						copy($moodleURL."/user/pix.php?file=".$studentId."/f1.jpg", $copyToURL);
+					}
+					
+				}catch (Exception $e){
+					return false;
+				}
+				
+				return $copyToURL;
+			}else{
+				return false;
+			}
+		}
+		
+		/**
+		* Copies an anonymous profile picture
+		* @param moodleURL base URL for this Moodle site
+		* @param CFG global variable for Moodle
+		*/
+		function copyAnonymousProfilePic($moodleURL, $CFG){
+			if(is_numeric($this->id) && $this->id >= 0){
+			
+				$studentId = $this->id;
+				$copyToURL = $CFG->dataroot."/participation_map/temp/anonymous.jpg";
+			
+				// Fetch profile picture
+				try{
+				
+					if($CFG->forcelogin){
+
+							// Take default picture (gray silhouette or yellow sponge smiley)
+							copy($moodleURL."/user/pix.php?file=anonymous/f1.jpg", $copyToURL);
+						
+					}else if($CFG->slasharguments){
+						// Moodle server allows slash arguments
+						if(!copy($moodleURL."/user/pix.php/anonymous/f1.jpg", $copyToURL)){
+							copy($moodleURL."/user/pix.php?file=anonymous/f1.jpg", $copyToURL);
+						}
+					}else{
+						// Moodle server forbids slash arguments
+						copy($moodleURL."/user/pix.php?file=anonymous/f1.jpg", $copyToURL);
+					}
+					
+				}catch (Exception $e){
+					return false;
+				}
+				
+				return $copyToURL;
+			}else{
+				return false;
+			}
+		}
+	}
