@@ -59,8 +59,8 @@
 				include("mysql/login.inc");
 
 				$table = $prefix.$pf."forum";
-				$query = mysqli_query($CFG->con, "SELECT assesstimestart, assesstimefinish, name FROM $table WHERE id=$forum");
-				$query = mysqli_fetch_array($query);
+				$query = mysql_query("SELECT assesstimestart, assesstimefinish, name FROM $table WHERE id=$forum");
+				$query = mysql_fetch_array($query);
 		
 				if(!$query){
 					echo "
@@ -84,20 +84,20 @@
 					
 						// Find discussion ID's of this forum
 						$table = $prefix.$pf."forum_discussions";
-						$queryD = mysqli_query($CFG->con, "SELECT id FROM $table WHERE forum=$forum");
-						while($tDisc = mysqli_fetch_array($queryD)){
+						$queryD = mysql_query("SELECT id FROM $table WHERE forum=$forum");
+						while($tDisc = mysql_fetch_array($queryD)){
 					
 							$disc = $tDisc["id"];
 						
 							// Find end time
 							$table = $prefix.$pf."forum_posts";
-							$query3 = mysqli_fetch_row(mysqli_query($CFG->con, "SELECT MAX(created) FROM $table WHERE discussion=$disc"));
+							$query3 = mysql_fetch_row(mysql_query("SELECT MAX(created) FROM $table WHERE discussion=$disc"));
 					 
 							if($query3[0] > $time_end){$time_end = $query3[0];}
 													
 							// Find start time
 							$table = $prefix.$pf."forum_posts";
-							$query4 = mysqli_fetch_row(mysqli_query($CFG->con, "SELECT MIN(created) FROM $table WHERE discussion=$disc"));
+							$query4 = mysql_fetch_row(mysql_query("SELECT MIN(created) FROM $table WHERE discussion=$disc"));
 					
 							if($time_start == 0){$time_start = $query4[0];}
 							else if($query4[0] < $time_start){$time_start = $query4[0];}
@@ -114,11 +114,8 @@
 					
 						// Count users in the course
 						$table = $prefix."course_display";
-						if ($result = mysqli_query($CFG->con, "SELECT id FROM $table WHERE course=$course;")) {
-							$totalStudents = mysqli_num_rows($result);
-						} else {
-							$totalStudents = 0;
-						}
+						$result = mysql_query("SELECT id FROM $table WHERE course=$course;");
+						$totalStudents = mysql_num_rows($result);
 
 						// Store entire forum
 						$cForum = new BS_Forum();
@@ -165,8 +162,8 @@
 
 						// Get discussions
 						$table = $prefix.$pf."forum_discussions";
-						$query = mysqli_query($CFG->con, "SELECT id, name, firstpost, userid FROM $table WHERE forum=$forum");
-						while($tDisc = mysqli_fetch_array($query)){
+						$query = mysql_query("SELECT id, name, firstpost, userid FROM $table WHERE forum=$forum");
+						while($tDisc = mysql_fetch_array($query)){
 
 							// Create discussion
 							$cDisc = new BS_Discussion($tDisc["name"]);
@@ -177,8 +174,8 @@
 
 							// Find all posts of that discussion
 							$table = $prefix.$pf."forum_posts";
-							$query2 = mysqli_query($CFG->con, "SELECT id, discussion, parent, userid, created, subject, message, totalscore FROM $table WHERE discussion=$discID");
-							while($tPost = mysqli_fetch_array($query2)){
+							$query2 = mysql_query("SELECT id, discussion, parent, userid, created, subject, message, totalscore FROM $table WHERE discussion=$discID");
+							while($tPost = mysql_fetch_array($query2)){
 
 								// Create post
 								$cPost = new BS_Post();
@@ -210,8 +207,8 @@
 										// Get Student
 										$author = $cPost->author;
 										$table = $prefix."user";
-										$query3 = mysqli_query($CFG->con, "SELECT firstname, lastname, username, idnumber, email, department FROM $table WHERE id=$author");
-										$tStudent = mysqli_fetch_array($query3);
+										$query3 = mysql_query("SELECT firstname, lastname, username, idnumber, email, department FROM $table WHERE id=$author");
+										$tStudent = mysql_fetch_array($query3);
 
 										// Create student
 										// (Assign student color and border color after plot is created)
@@ -731,8 +728,8 @@
 						if($pm["headerDisplayCourse"]){
 
 							$table = $prefix."course";
-							$course = mysqli_query($CFG->con, "SELECT fullname, shortname FROM $table WHERE id=$course");
-							$course = mysqli_fetch_array($course);
+							$course = mysql_query("SELECT fullname, shortname FROM $table WHERE id=$course");
+							$course = mysql_fetch_array($course);
 
 							$textPointer += $textH;
 							if($anonymous){
@@ -751,8 +748,8 @@
 						if($pm["headerDisplayForum"]){
 
 							$table = $prefix.$pf."forum";
-							$forums = mysqli_query($CFG->con, "SELECT name FROM $table WHERE id=$forum;");
-							$forums = mysqli_fetch_array($forums);
+							$forums = mysql_query("SELECT name FROM $table WHERE id=$forum;");
+							$forums = mysql_fetch_array($forums);
 							
 							if($anonymous){
 								$forums["name"] = hash("md5", $forums["name"]);
@@ -930,22 +927,22 @@
 					
 						// Find end time
 						$table = $prefix.$pf."forum_posts";
-						$query3 = mysqli_fetch_row(mysqli_query($CFG->con, "SELECT MAX(created) FROM $table WHERE discussion=$disc"));
+						$query3 = mysql_fetch_row(mysql_query("SELECT MAX(created) FROM $table WHERE discussion=$disc"));
 						echo "SELECT MAX(created) FROM $table WHERE discussion=$disc", "<br/>";
 						print_r($query3);
 						echo "<br/>";
 												
 						// Find start time
 						$table = $prefix.$pf."forum_posts";
-						$query4 = mysqli_fetch_row(mysqli_query($CFG->con, "SELECT MIN(created) FROM $table WHERE discussion=$disc"));
+						$query4 = mysql_fetch_row(mysql_query("SELECT MIN(created) FROM $table WHERE discussion=$disc"));
 						echo "SELECT MIN(created) FROM $table WHERE discussion=$disc", "<br/>";
 						print_r($query4);
 						echo "<br/>";
 					
 						$table = $prefix.$pf."forum_posts";
-						$query5 = mysqli_query($CFG->con, "DESC $table");
+						$query5 = mysql_query("DESC $table");
 						echo "DESC $table", "<br/>";
-						while($row = mysqli_fetch_row($query5)){
+						while($row = mysql_fetch_row($query5)){
 							print_r($row);
 							echo "<br/>";
 						}

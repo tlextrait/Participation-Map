@@ -32,9 +32,9 @@
 			global $CFG;
 			if(is_numeric($id)){
 				$table = $CFG->prefix."course";
-				// $id = mysql_real_escape_string($id);
-				$result = mysqli_query($CFG->con, "SELECT * FROM $table WHERE id=$id");
-				return $result ? mysqli_fetch_array($result) : false;
+				$id = mysql_real_escape_string($id);
+				$result = mysql_query("SELECT * FROM $table WHERE id=$id");
+				return $result ? mysql_fetch_array($result) : false;
 			}else{return false;}
 		}
 		
@@ -48,18 +48,18 @@
 			if(is_numeric($id)){
 				// We want both forums and partforums
 				$table = $CFG->prefix."forum";
-				$forums = mysqli_query($CFG->con, "SELECT * FROM $table WHERE course=$id");
+				$forums = mysql_query("SELECT * FROM $table WHERE course=$id");
 				$table2 = $CFG->prefix."partforum";
-				$forums2 = mysqli_query($CFG->con, "SELECT * FROM $table2 WHERE course=$id");
+				$forums2 = mysql_query("SELECT * FROM $table2 WHERE course=$id");
 				$array = array();
 				if($forums){
-					while($f = mysqli_fetch_array($forums)){
+					while($f = mysql_fetch_array($forums)){
 						$f["partforum"]=false;	// this is a regular forum
 						array_push($array, $f);
 					}
 				}
 				if($forums2){
-					while($f = mysqli_fetch_array($forums2)){
+					while($f = mysql_fetch_array($forums2)){
 						$f["partforum"]=true;	// this is a partforum
 						array_push($array, $f);
 					}
@@ -72,10 +72,10 @@
 			global $CFG;
 			if(is_numeric($id)){
 				$table = $CFG->prefix."forum_discussions";
-				$result = mysqli_query($CFG->con, "SELECT * FROM $table WHERE forum=$id");
+				$result = mysql_query("SELECT * FROM $table WHERE forum=$id");
 				if($result){
 					$array = array();
-					while($d = mysqli_fetch_array($result)){
+					while($d = mysql_fetch_array($result)){
 						array_push($array, $d);
 					}
 					return $array;
@@ -87,10 +87,10 @@
 			global $CFG;
 			if(is_numeric($id)){
 				$table = $CFG->prefix."partforum_discussions";
-				$result = mysqli_query($CFG->con, "SELECT * FROM $table WHERE forum=$id");
+				$result = mysql_query("SELECT * FROM $table WHERE forum=$id");
 				if($result){
 					$array = array();
-					while($d = mysqli_fetch_array($result)){
+					while($d = mysql_fetch_array($result)){
 						array_push($array, $d);
 					}
 					return $array;
@@ -110,8 +110,8 @@
 			global $CFG;
 			if(is_numeric($id)){
 				$table = $CFG->prefix."course_display";
-				$result = mysqli_query($CFG->con, "SELECT id FROM $table WHERE course=$id");
-				return $result ? mysqli_num_rows($result) : false;
+				$result = mysql_query("SELECT id FROM $table WHERE course=$id");
+				return $result ? mysql_num_rows($result) : false;
 			}else{return false;}
 		}
 		
@@ -125,13 +125,13 @@
 			if(is_numeric($id)){
 				// We count both forums and partforums
 				$table = $CFG->prefix."forum";
-				$result = mysqli_query($CFG->con, "SELECT id FROM $table WHERE course=$id");
+				$result = mysql_query("SELECT id FROM $table WHERE course=$id");
 				$table2 = $CFG->prefix."partforum";
-				$result2 = mysqli_query($CFG->con, "SELECT id FROM $table2 WHERE course=$id");
+				$result2 = mysql_query("SELECT id FROM $table2 WHERE course=$id");
 				
 				$total = 0;
-				if($result){$total+=mysqli_num_rows($result);}
-				if($result2){$total+=mysqli_num_rows($result2);}
+				if($result){$total+=mysql_num_rows($result);}
+				if($result2){$total+=mysql_num_rows($result2);}
 				return $result || $result2 ? $total : false;
 			}else{return false;}
 		}
@@ -140,8 +140,8 @@
 			global $CFG;
 			if(is_numeric($id)){
 				$table = $CFG->prefix."forum_discussions";
-				$result = mysqli_query($CFG->con, "SELECT * FROM $table WHERE forum=$id");
-				return $result ? mysqli_num_rows($result) : false;
+				$result = mysql_query("SELECT * FROM $table WHERE forum=$id");
+				return $result ? mysql_num_rows($result) : false;
 			}else{return false;}
 		}
 		
@@ -149,8 +149,8 @@
 			global $CFG;
 			if(is_numeric($id)){
 				$table = $CFG->prefix."partforum_discussions";
-				$result = mysqli_query($CFG->con, "SELECT * FROM $table WHERE forum=$id");
-				return $result ? mysqli_num_rows($result) : false;
+				$result = mysql_query("SELECT * FROM $table WHERE forum=$id");
+				return $result ? mysql_num_rows($result) : false;
 			}else{return false;}
 		}
 		
@@ -163,11 +163,11 @@
 					$table = $CFG->prefix."forum_posts";
 				}
 				if($countGroupPosts){
-					$result = mysqli_query($CFG->con, "SELECT id FROM $table WHERE discussion=$id");
+					$result = mysql_query("SELECT id FROM $table WHERE discussion=$id");
 				}else{
-					$result = mysqli_query($CFG->con, "SELECT id FROM $table WHERE discussion=$id AND parent>0");
+					$result = mysql_query("SELECT id FROM $table WHERE discussion=$id AND parent>0");
 				}
-				return $result ? mysqli_num_rows($result) : false;
+				return $result ? mysql_num_rows($result) : false;
 			}else{return false;}
 		}
 		
