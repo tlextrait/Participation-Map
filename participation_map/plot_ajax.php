@@ -18,7 +18,7 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	*/
 	
-	include("includes/head.inc");
+	require_once "includes/head.inc";
 
 	if(isUserInstructor($_POST["course"]) || isUserAdmin()){
 		if(isset($_POST["course"]) && is_numeric($_POST["course"])){
@@ -35,7 +35,7 @@
 				ini_set('display_errors', '1');
 			
 				// Load config
-				include("includes/config_loader.inc");
+				require_once "includes/config_loader.inc";
 		
 				// Copy vars
 				$course = $_POST["course"];
@@ -56,7 +56,7 @@
 				Get Forum
 				===================================
 				*/
-				include("mysql/login.inc");
+				require_once "mysql/login.inc";
 
 				$table = $prefix.$pf."forum";
 				$query = mysqli_query($CFG->con, "SELECT assesstimestart, assesstimefinish, name FROM $table WHERE id=$forum");

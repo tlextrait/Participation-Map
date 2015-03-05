@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 	// Get Moodle config info
-	require_once("../config.php");
+	require_once "../config.php";
 
 	$file = $CFG->dataroot."/bushgrapher/quickplots/".$_GET["file"];
 

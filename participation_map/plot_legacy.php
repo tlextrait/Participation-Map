@@ -21,15 +21,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<?php include("includes/head.inc"); ?>
+	<?php require_once "includes/head.inc"; ?>
 </head>
 <body>
 
 	<div id="main" class="s1000">
 		
-		<?php include("includes/heading.inc"); ?>
+		<?php require_once "includes/heading.inc"; ?>
 		
-		<?php include("includes/navbar1000.inc"); ?>
+		<?php require_once "includes/navbar1000.inc"; ?>
 	
 		<div class="block1000">
 			<?php
@@ -48,7 +48,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 							ini_set('display_errors', '1');
 						
 							// Load config
-							include("includes/config_loader.inc");
+							require_once "includes/config_loader.inc";
 					
 							// Copy vars
 							$course = $_GET["course"];
@@ -59,7 +59,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 							Get Forum
 							===================================
 							*/
-							include("mysql/login.inc");
+							require_once "mysql/login.inc";
 							$table = $prefix."forum";
 							$query = mysqli_query($CFG->con, "SELECT assesstimestart, assesstimefinish, name FROM $table WHERE id=$forum");
 							$query = mysqli_fetch_array($query);
@@ -949,7 +949,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			?>
 		</div>
 	
-		<?php include("includes/footer1000.inc"); ?>
+		<?php require_once "includes/footer1000.inc"; ?>
 	</div>
 	
 </body>

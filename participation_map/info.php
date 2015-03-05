@@ -21,15 +21,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<?php include("includes/head.inc"); ?>
+	<?php require_once "includes/head.inc"; ?>
 </head>
 <body>
 
 	<div id="main">
 		
-		<?php include("includes/heading.inc"); ?>
+		<?php require_once "includes/heading.inc"; ?>
 	
-		<?php include("includes/navbar.inc"); ?>
+		<?php require_once "includes/navbar.inc"; ?>
 		
 		<?php
 		
@@ -136,7 +136,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		
 		?>
 	
-		<?php include("includes/footer.inc"); ?>
+		<?php require_once "includes/footer.inc"; ?>
 		
 	</div>
 	

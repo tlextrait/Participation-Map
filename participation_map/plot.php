@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<?php include("includes/head.inc"); ?>
+	<?php require_once "includes/head.inc"; ?>
 </head>
 <body>
 
@@ -51,8 +51,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 	<div id="main" class="s1000">
 		
-		<?php include("includes/heading.inc"); ?>
-		<?php include("includes/navbar1000.inc"); ?>
+		<?php require_once "includes/heading.inc"; ?>
+		<?php require_once "includes/navbar1000.inc"; ?>
 	
 		<div class="block1000" id="bg_result">
 			<center>
@@ -65,7 +65,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			</center>
 		</div>
 	
-		<?php include("includes/footer1000.inc"); ?>
+		<?php require_once "includes/footer1000.inc"; ?>
 	</div>
 	
 </body>

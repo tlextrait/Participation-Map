@@ -21,14 +21,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<?php include("includes/head.inc"); ?>
+	<?php require_once "includes/head.inc"; ?>
 </head>
 <body>
 
 	<div id="main">
 		
-		<?php include("includes/heading.inc"); ?>
-		<?php include("includes/navbar.inc"); ?>
+		<?php require_once "includes/heading.inc"; ?>
+		<?php require_once "includes/navbar.inc"; ?>
 	
 		<div class="block600">
 			<?php 
@@ -41,7 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 						
 						if($course){
 							// Load config
-							include("includes/config_loader.inc");
+							require_once "includes/config_loader.inc";
 					
 							// Count users in the course
 							$userCount = PartMap::countUsersInCourse($courseid);
@@ -56,17 +56,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					<col width="400">
 					<tr>
 						<th>Name:</th>
-						<td><?php echo $course["fullname"]; ?></td>
+						<td><?= $course["fullname"] ?></td>
 						<td></td>
 					</tr>
 					<tr>
 						<th>Short name:</th>
-						<td><?php echo $course["shortname"]; ?></td>
+						<td><?= $course["shortname"] ?></td>
 						<td></td>
 					</tr>
 					<tr>
 						<th>Forums:</th>
-						<td><?php echo $forumCount; ?></td>
+						<td><?= $forumCount ?></td>
 						<td></td>
 					</tr>
 				</table>
@@ -166,7 +166,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			?>
 		</div>
 	
-		<?php include("includes/footer.inc"); ?>
+		<?php require_once "includes/footer.inc"; ?>
 		
 	</div>
 	
